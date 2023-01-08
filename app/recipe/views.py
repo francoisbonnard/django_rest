@@ -51,5 +51,5 @@ class IngredientViewSet(mixins.ListModelMixin,
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_query_set(self):
+    def get_queryset(self):
         return self.queryset.filter(user=self.request.user).order_by('-name')
