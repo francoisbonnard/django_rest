@@ -14,6 +14,10 @@ def create_user(email='user@example.com', password='testPass123'):
     """Create a new user"""
     return get_user_model().objects.create_user(email=email, password=password)
 
+def detail_url(ingredient_id):
+    """ create and return an ingredient detail URL"""
+    return reverse("recipe:ingredient-detail", args=[ingredient_id])
+
 class PublicIngredientsApiTests(TestCase):
 
     def setUp(self):
@@ -56,5 +60,26 @@ class PrivateIngredientsApiTests(TestCase):
         self.assertEqual(len(res.data),1)
         self.assertEqual(res.data[0]['name'],ingredient.name)
         self.assertEqual(res.data[0]['id'],ingredient.id)
+
+    def test_update_ingredient(self):
+        """ test updating the ingredient"""
+        ingredient = Ingredient.objects.create(user=self.user, name="farine")
+        payload = {'name' : "farine de blé"}
+        url = detail_url(ingredient.id)
+        res = self.client.patch(url,payload)
+
+        self.assertEqual(res.status_code,200)
+        ingredient.refresh_from_db()
+        self.assertEqual(ingredient.name, payload['name'])
+
+    def test_delete_ingredient(self):
+        """ test deleting the ingredient"""
+        ingredient = Ingredient.objects.create(user=self.user, name="Salade")
+        url = detail_url(ingredient.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code,status.HTTP_204_NO_CONTENT)
+        ingredients = Ingredient.objects.filter(user=self.user)
+        self.assertFalse(ingredients.exists())
 
 
